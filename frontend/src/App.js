@@ -6,10 +6,22 @@ function App() {
   const [guess, setGuess] = useState("");
   const [message, setMessage] = useState("");
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const handleInputChange = (event) => {
+    setGuess(event.target.value);
+  };
+
+  const handleSubmit = async () => {
+    if (!guess.trim()) {
+      setMessage("Please enter a guess.");
+      return;
+    }
+
     try {
-      const response = await fetch("http://localhost:8000/hello/");
+      const response = await fetch(
+        `http://localhost:8000/wordle_judgment/?guess=${encodeURIComponent(
+          guess
+        )}`
+      );
       const data = await response.text();
       setMessage(data);
     } catch (error) {
@@ -19,25 +31,34 @@ function App() {
     setGuess("");
   };
 
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      handleSubmit();
+    }
+  };
+
   return (
     <div className="App">
       <header className="App-header">
         <h1>Guess a five-letter word</h1>
-        <form onSubmit={handleSubmit}>
+        <div>
           <input
             type="text"
-            onChange={(e) => setGuess(e.target.value)}
+            value={guess}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
             maxLength="5"
             className="guess-input"
+            placeholder="Enter your guess"
           />
           <button
-            type="submit"
+            onClick={handleSubmit}
             className="submit button"
             style={{ marginTop: "30px" }}
           >
             Submit
           </button>
-        </form>
+        </div>
         {message && <p style={{ marginTop: "20px" }}>{message}</p>}
       </header>
     </div>

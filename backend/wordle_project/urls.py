@@ -16,9 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from src.wordle import hello_world
+from src.wordle import wordle_judgment
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('hello/', hello_world, name='hello_world')
+    path('wordle_judgment/', wordle_judgment, name='wordle_judgement')
 ]
