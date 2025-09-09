@@ -1,0 +1,5 @@
+max_turns: 5
+word_list:
+  - hello
+  - world
+  - react
