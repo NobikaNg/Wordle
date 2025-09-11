@@ -7,15 +7,26 @@ services:
       - ./backend:/app
     networks:
       - wordle-net
+    depends_on:
+      - redis
 
   frontend:
     build: ./frontend
     ports:
       - "3000:80"
+    volumes:
+      - ./frontend/src:/app/src
     networks:
       - wordle-net
     depends_on:
       - backend
+
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
+    networks:
+      - wordle-net
 
 networks:
   wordle-net:

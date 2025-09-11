@@ -1,6 +1,11 @@
 import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+import random
+import os
+import yaml
+from pathlib import Path
+from django.conf import settings
 
 class PlayerManager(BaseUserManager):
     def create_user(self, username, password=None, **extra_fields):
@@ -56,3 +61,17 @@ class GameRoom(models.Model):
 
     def is_full(self):
         return len(self.players) >= 2
+    
+    @property
+    def host(self):
+        return self.players[0] if self.players else None
+
+    def reset_game(self, aborted=False, winner=None):
+        word_list = settings.GAME_CONFIG['word_list']
+        self.answer_word = random.choice(word_list)
+        self.game_state = 'waiting'
+        self.turn_number = 0
+        self.current_turn_player_index = 0
+        self.history = []
+        self.winner = winner if aborted else None
+        self.save()

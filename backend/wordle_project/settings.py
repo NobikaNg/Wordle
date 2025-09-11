@@ -11,10 +11,21 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+import yaml
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+CONFIG_PATH = os.path.join(BASE_DIR, 'config.yml')
+try:
+    with open(CONFIG_PATH, 'r') as f:
+        GAME_CONFIG = yaml.safe_load(f)
+except FileNotFoundError:
+    GAME_CONFIG = {
+        'max_turns': 3,
+        'word_list': ['world', 'hello', 'react']
+    }
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -84,7 +95,7 @@ WSGI_APPLICATION = 'wordle_project.wsgi.application'
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels_redis.core.RedisChannelConsumer",
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
             "hosts": [("redis", 6379)],
         },

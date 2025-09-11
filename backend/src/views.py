@@ -1,24 +1,11 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
-from django.contrib.auth.models import User
 from .models import Player, GameRoom
-from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.tokens import RefreshToken
 import random
-import yaml
-from pathlib import Path
 import logging
-
-# Loading Configuration
-CONFIG = {}
-try:
-    config_path = Path(__file__).resolve().parent.parent / 'config.yml'
-    with open(config_path, "r") as f:
-        CONFIG = yaml.safe_load(f)
-    logging.info("Game configuration loaded successfully.")
-except Exception as e:
-    logging.error(f"Fail to load the config file: {e}")
+from django.conf import settings
 
 class RegisterView(APIView):
     permission_classes = [permissions.AllowAny] 
@@ -50,12 +37,12 @@ class CreateRoomView(APIView):
     def post(self, request):
         logging.info(f"CreateRoomView headers: {request.headers}")
         try:
-            word_list = CONFIG.get('word_list', ['error'])
+            word_list = settings.GAME_CONFIG.get('word_list', ['error'])
             if not word_list or word_list == ['error']:
                 raise ValueError("Word list is empty or missing in config")
             
             ans_word = random.choice(word_list)
-            max_turns = CONFIG.get('max_turns', 6)
+            max_turns = settings.GAME_CONFIG.get('max_turns', 6)
 
             room = GameRoom.objects.create(
                 answer_word=ans_word,
