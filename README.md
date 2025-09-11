@@ -25,7 +25,8 @@ Framework: React
 
 TODO:
 
-1. Provide True or False feedback
+1. Room Selection
+2. Interactive Game
 
 ## Back End
 
@@ -33,4 +34,5 @@ Framework: Django
 
 TODO:
 
-1. Provide Word Generation Logic
+1. Provide Take Turns Logic
+2. Web Socket

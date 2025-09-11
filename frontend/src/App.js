@@ -1,33 +1,66 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import "./App.css";
+import Auth from "./Auth";
+import Lobby from "./Lobby";
 import WordleGame from "./WordleGame";
 
 function App() {
-  const [isGameStarted, setIsGameStarted] = useState(false);
+  const [username, setUsername] = useState(null);
 
-  const startGame = () => {
-    setIsGameStarted(true);
+  useEffect(() => {
+    const storedUsername = localStorage.getItem("username");
+    const token = localStorage.getItem("accessToken");
+    if (storedUsername && token) {
+      setUsername(storedUsername);
+    }
+  }, []);
+
+  const handleLoginSuccess = (loggedInUsername) => {
+    setUsername(loggedInUsername);
+  };
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("username");
+    setUsername(null);
   };
 
   return (
-    <div className="App">
-      <header className="App-header">
-        {isGameStarted ? (
-          <WordleGame />
-        ) : (
-          <div>
-            <h1>Welcome to Wordle</h1>
-            <button
-              onClick={startGame}
-              className="submit-button"
-              style={{ fontSize: "1.5rem", padding: "10px 20px" }}
-            >
-              Game Start
-            </button>
-          </div>
-        )}
-      </header>
-    </div>
+    <Router>
+      <div className="App">
+        <header className="App-header">
+          {username && (
+            <div className="user-info">
+              <span>Logged in as: {username}</span>
+              <button onClick={handleLogout} className="logout-button">
+                Logout
+              </button>
+            </div>
+          )}
+          <Routes>
+            {!username ? (
+              // Login page
+              <Route
+                path="*"
+                element={<Auth onLoginSuccess={handleLoginSuccess} />}
+              />
+            ) : (
+              // Lobby and Game room
+              <>
+                <Route path="/" element={<Lobby />} />
+                <Route path="/game/:roomId" element={<WordleGame />} />
+                <Route path="*" element={<Navigate to="/" />} />
+              </>
+            )}
+          </Routes>
+        </header>
+      </div>
+    </Router>
   );
 }
 

@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -39,6 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'src',
     'corsheaders',
+    'channels',
+    'rest_framework',
+    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
@@ -50,6 +54,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+CORS_ALLOW_HEADERS = [
+    'authorization',
+    'content-type',
 ]
 
 ROOT_URLCONF = 'wordle_project.urls'
@@ -70,11 +79,23 @@ TEMPLATES = [
     },
 ]
 
+ASGI_APPLICATION = 'wordle_project.asgi.application'
 WSGI_APPLICATION = 'wordle_project.wsgi.application'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelConsumer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],
+        },
+    },
+}
 
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
+
+
 
 DATABASES = {
     'default': {
@@ -125,6 +146,25 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+AUTH_USER_MODEL = 'src.Player'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    )
+}
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'USER_ID_FIELD': 'username', # main key field is username
+    'USER_ID_CLAIM': 'user_id',
+}
+
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',
 ]
@@ -139,7 +179,7 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'verbose':{
+        'verbose': {
             'format': '[{asctime}] {levelname}:{name}:{message}',
             'style': '{',
         },
@@ -150,8 +190,20 @@ LOGGING = {
             'formatter': 'verbose',
         },
     },
-    'root':{
-        'handlers': ['console'],
-        'level': 'DEBUG',
+    'loggers': {
+        'rest_framework_simplejwt': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'root': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
     },
 }
