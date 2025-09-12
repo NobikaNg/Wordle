@@ -72,7 +72,6 @@ class ListRoomsView(APIView):
                 'players_count': len(room.players),
                 'is_full': room.is_full(),
                 'host': room.host,
-                # --- 新增：回傳遊戲狀態 ---
                 'game_state': room.game_state,
             })
         return Response(data)
