@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../App.css";
+import EndGameAnimation from "./Endgameanimation";
 
-function MultiplayerGame() {
+function MultiplayerGame({ username }) {
   const { roomId } = useParams();
   const navigate = useNavigate();
   const [gameState, setGameState] = useState(null);
@@ -10,7 +11,6 @@ function MultiplayerGame() {
   const [statusMessage, setStatusMessage] = useState("Connecting to room...");
   const [eventNotification, setEventNotification] = useState("");
   const socketRef = useRef(null);
-  const username = localStorage.getItem("username");
 
   useEffect(() => {
     if (!username) {
@@ -75,10 +75,6 @@ function MultiplayerGame() {
     };
   }, [roomId, navigate, username]);
 
-  if (!username) {
-    return null;
-  }
-
   const handleLeaveRoom = () => {
     if (socketRef.current) {
       socketRef.current.send(JSON.stringify({ type: "leave_room" }));
@@ -138,6 +134,13 @@ function MultiplayerGame() {
 
   return (
     <div>
+      <EndGameAnimation
+        isGameOver={isGameOver}
+        winner={gameState.winner}
+        username={username}
+        isDraw={gameState.winner === "draw"}
+      />
+
       <button onClick={handleLeaveRoom} className="top-right-action-button">
         Leave Room
       </button>

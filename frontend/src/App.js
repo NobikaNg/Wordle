@@ -68,10 +68,13 @@ function App() {
 
             <Route element={<ProtectedRoutes username={username} />}>
               <Route path="/" element={<Lobby />} />
-              <Route path="/game/:roomId" element={<MultiplayerGame />} />
+              <Route
+                path="/game/:roomId"
+                element={<MultiplayerGame username={username} />}
+              />
               <Route
                 path="/single-player-game/:roomId"
-                element={<SinglePlayerGame />}
+                element={<SinglePlayerGame username={username} />}
               />
             </Route>
 

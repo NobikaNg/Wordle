@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../App.css";
+import EndGameAnimation from "./Endgameanimation";
 
-function SinglePlayerGame() {
+function SinglePlayerGame({ username }) {
   const { roomId } = useParams();
   const navigate = useNavigate();
   const [gameState, setGameState] = useState(null);
   const [guess, setGuess] = useState("");
   const [statusMessage, setStatusMessage] = useState("Setting up your game...");
-  const username = localStorage.getItem("username");
 
   useEffect(() => {
     if (!username) {
@@ -28,10 +28,6 @@ function SinglePlayerGame() {
     });
     setStatusMessage(""); // Clear "Connecting..." message
   }, [navigate, username]);
-
-  if (!username) {
-    return null;
-  }
 
   const handleLeaveRoom = () => {
     navigate("/lobby");
@@ -137,6 +133,13 @@ function SinglePlayerGame() {
 
   return (
     <div>
+      <EndGameAnimation
+        isGameOver={isGameOver}
+        winner={gameState.winner}
+        username={username}
+        isDraw={false}
+      />
+
       <button onClick={handleLeaveRoom} className="top-right-action-button">
         Back to Lobby
       </button>
