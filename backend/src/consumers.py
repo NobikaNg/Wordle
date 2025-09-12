@@ -46,7 +46,7 @@ class WordleConsumer(AsyncWebsocketConsumer):
             cache.set(cache_key, self.channel_name, timeout=3600)
 
             room = await database_sync_to_async(GameRoom.objects.get)(room_id=self.room_id)
-            if len(room.players) >= 2 and self.username not in room.players:
+            if self.username not in room.players and (room.is_full() or room.game_state == 'playing'):
                 await self.close(code=4002) 
                 return
 
@@ -184,12 +184,16 @@ class WordleConsumer(AsyncWebsocketConsumer):
             await self.close()
         elif action_type == 'start_game':
             await self.handle_start_game()
+        elif action_type == 'replay_game':
+            await self.handle_replay_game()
     
     async def handle_start_game(self):
         room = await database_sync_to_async(GameRoom.objects.get)(room_id=self.room_id)
 
         if room.host == self.username and room.is_full() and room.game_state == 'waiting':
+            await database_sync_to_async(room.reset_game)()
             room.game_state = 'playing'
+            room.winner = None 
             await database_sync_to_async(room.save)()
 
             await self.channel_layer.group_send(
@@ -200,6 +204,22 @@ class WordleConsumer(AsyncWebsocketConsumer):
                 }
             )
     
+    async def handle_replay_game(self):
+        # This is an alias for handle_start_game, for clarity
+        room = await database_sync_to_async(GameRoom.objects.get)(room_id=self.room_id)
+        if room.host == self.username and room.game_state == 'waiting' and room.is_full() :
+            await database_sync_to_async(room.reset_game)()
+            room.game_state = 'playing'
+            await database_sync_to_async(room.save)()
+
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'broadcast_game_state',
+                    'game_state': await self.get_game_state_json(room)
+                }
+            )
+
     async def handle_leave_room(self):
         logging.info(f"Player '{self.username}' requested to leave room '{self.room_id}'.")
         await self.close()
@@ -240,20 +260,22 @@ class WordleConsumer(AsyncWebsocketConsumer):
         })
         room.turn_number += 1
         
-        game_state_update = {}
+        game_over = False
+        winner = None
         if guess == ans_word:
-            room.game_state = 'finished'
-            room.winner = self.username
-            game_state_update = {'type': 'game_over', 'winner': self.username}
-        elif room.turn_number >= room.max_turns * 2: 
-            room.game_state = 'finished'
-            room.winner = 'draw'
-            game_state_update = {'type': 'game_over', 'winner': 'draw'}
+            game_over = True
+            winner = self.username
+        elif room.turn_number >= room.max_turns * len(room.players): 
+            game_over = True
+            winner = 'draw'
+        
+        if game_over:
+            room.game_state = 'waiting'
+            room.winner = winner
+            await database_sync_to_async(room.save)()
         else:
             room.current_turn_player_index = (room.current_turn_player_index + 1) % len(room.players)
-            game_state_update = {'type': 'game_update'}
-
-        await database_sync_to_async(room.save)()
+            await database_sync_to_async(room.save)()
 
         await self.channel_layer.group_send(
             self.room_group_name,
@@ -271,6 +293,9 @@ class WordleConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def get_game_state_json(self, room):
+        answer = None
+        if room.game_state == 'waiting' and room.winner is not None:
+            answer = room.answer_word.upper()
         return {
             'players': room.players,
             'history': room.history,

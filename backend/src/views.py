@@ -47,7 +47,8 @@ class CreateRoomView(APIView):
             room = GameRoom.objects.create(
                 answer_word=ans_word,
                 max_turns=max_turns,
-                players=[request.user.username] 
+                players=[request.user.username], 
+                game_mode='multiplayer'
             )
             
             logging.info(f"New game room {room.room_id} created by {request.user.username}. Answer: {ans_word}")
@@ -60,6 +61,18 @@ class CreateRoomView(APIView):
 
 class ListRoomsView(APIView):
     permission_classes = [permissions.AllowAny]
+
     def get(self, request):
-        rooms = GameRoom.objects.filter(game_state='waiting').values('room_id', 'players')
-        return Response(list(rooms))
+        rooms = GameRoom.objects.filter(game_mode='multiplayer')
+        
+        data = []
+        for room in rooms:
+            data.append({
+                'room_id': room.room_id,
+                'players_count': len(room.players),
+                'is_full': room.is_full(),
+                'host': room.host,
+                # --- 新增：回傳遊戲狀態 ---
+                'game_state': room.game_state,
+            })
+        return Response(data)

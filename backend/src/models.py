@@ -46,8 +46,13 @@ class Player(AbstractBaseUser, PermissionsMixin):
         return self.username
 
 class GameRoom(models.Model):
+    GAME_MODES = [
+        ('single_player', 'Single Player'),
+        ('multiplayer', 'Multiplayer'),
+    ]
     room_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     players = models.JSONField(default=list)
+    game_mode = models.CharField(max_length=20, choices=GAME_MODES, default='multiplayer')
 
     answer_word = models.CharField(max_length=5)
     max_turns = models.IntegerField(default=3)
@@ -73,5 +78,5 @@ class GameRoom(models.Model):
         self.turn_number = 0
         self.current_turn_player_index = 0
         self.history = []
-        self.winner = winner if aborted else None
+        self.winner = winner
         self.save()

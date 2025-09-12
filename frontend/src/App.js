@@ -4,11 +4,30 @@ import {
   Routes,
   Route,
   Navigate,
+  Outlet,
 } from "react-router-dom";
 import "./App.css";
-import Auth from "./Auth";
-import Lobby from "./Lobby";
-import WordleGame from "./WordleGame";
+import Auth from "./component/Auth";
+import Lobby from "./component/Lobby";
+import MultiplayerGame from "./component/MultiplayerGame";
+import SinglePlayerGame from "./component/SinglePlayerGame";
+
+// 這個保護殼確保「未登入」的使用者才能存取
+const PublicRoutes = ({ username }) => {
+  if (username) {
+    // 如果使用者已登入，跳轉到大廳
+    return <Navigate to="/" replace />;
+  }
+  // 如果未登入，正常顯示登入頁
+  return <Outlet />;
+};
+
+const ProtectedRoutes = ({ username }) => {
+  if (!username) {
+    return <Navigate to="/login" replace />;
+  }
+  return <Outlet />;
+};
 
 function App() {
   const [username, setUsername] = useState(null);
@@ -43,20 +62,26 @@ function App() {
             </div>
           )}
           <Routes>
-            {!username ? (
-              // Login page
+            {/* 使用 PublicRoutes 保護登入頁 */}
+            <Route element={<PublicRoutes username={username} />}>
               <Route
-                path="*"
+                path="/login"
                 element={<Auth onLoginSuccess={handleLoginSuccess} />}
               />
-            ) : (
-              // Lobby and Game room
-              <>
-                <Route path="/" element={<Lobby />} />
-                <Route path="/game/:roomId" element={<WordleGame />} />
-                <Route path="*" element={<Navigate to="/" />} />
-              </>
-            )}
+            </Route>
+
+            {/* 使用 ProtectedRoutes 保護需要登入的頁面 */}
+            <Route element={<ProtectedRoutes username={username} />}>
+              <Route path="/" element={<Lobby />} />
+              <Route path="/game/:roomId" element={<MultiplayerGame />} />
+              <Route
+                path="/single-player-game/:roomId"
+                element={<SinglePlayerGame />}
+              />
+            </Route>
+
+            {/* 對於任何其他未匹配的路徑，都跳轉到首頁 */}
+            <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </header>
       </div>
