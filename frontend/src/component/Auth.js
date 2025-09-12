@@ -36,33 +36,30 @@ function Auth({ onLoginSuccess }) {
   };
 
   return (
-    <div>
+    <div className="centered-container">
       <h1>Welcome to Wordle Battle</h1>
       <h2>Enter your credentials</h2>
-      <div className="input-area">
-        <input
-          type="text"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="Your username"
-          className="guess-input"
-        />
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Your password, length>=5"
-          className="guess-input"
-          style={{ marginTop: "10px" }}
-        />
-      </div>
-      <div className="button-group" style={{ marginTop: "20px" }}>
-        <button onClick={() => handleAuth("login")} className="submit-button">
+      <input
+        type="text"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+        placeholder="Your username"
+        className="auth-input"
+      />
+      <input
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        placeholder="Your password, length>=5"
+        className="auth-input"
+      />
+      <div className="button-group" style={{ marginTop: "10px" }}>
+        <button onClick={() => handleAuth("login")} className="button">
           Login
         </button>
         <button
           onClick={() => handleAuth("register")}
-          className="submit-button"
+          className="button"
           style={{ marginLeft: "10px" }}
         >
           Register

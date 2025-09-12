@@ -6,14 +6,20 @@ function Lobby() {
   const navigate = useNavigate();
 
   const fetchRooms = async () => {
-    const response = await fetch("http://localhost:8000/api/list_rooms/");
-    const data = await response.json();
-    setRooms(data);
+    try {
+      const response = await fetch("http://localhost:8000/api/list_rooms/");
+      if (response.ok) {
+        const data = await response.json();
+        setRooms(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch rooms:", error);
+    }
   };
 
   useEffect(() => {
     fetchRooms();
-    const interval = setInterval(fetchRooms, 1000); // refresh the page per 1s
+    const interval = setInterval(fetchRooms, 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -30,7 +36,7 @@ function Lobby() {
     if (response.ok) {
       navigate(`/game/${data.room_id}`);
     } else {
-      alert("Failed to cteate room");
+      alert("Failed to create room");
     }
   };
 
@@ -59,25 +65,34 @@ function Lobby() {
   };
 
   return (
-    <div>
+    <div className="centered-container">
       <h2>Game Lobby</h2>
       <div style={{ marginBottom: "20px" }}>
-        <button onClick={handleCreateRoom} style={{ marginRight: "10px" }}>
+        <button
+          onClick={handleCreateRoom}
+          className="button"
+          style={{ marginRight: "10px" }}
+        >
           Create Multiplayer Room
         </button>
-        <button onClick={handleStartSinglePlayer}>
+        <button onClick={handleStartSinglePlayer} className="button">
           Start Single Player Game
         </button>
       </div>
       <h3>Available Rooms</h3>
-      <ul>
+      <ul className="room-list">
         {rooms.map((room) => (
-          <li key={room.room_id}>
-            Room by {room.host} ({room.players_count}/2) -{" "}
-            <span style={{ fontWeight: "bold" }}>
-              {room.game_state.toUpperCase()}
-            </span>
+          <li key={room.room_id} className="room-list-item">
+            <div className="room-info">
+              <span>
+                Room by {room.host} ({room.players_count}/2)
+              </span>
+              <span className="room-state">
+                {room.game_state.toUpperCase()}
+              </span>
+            </div>
             <button
+              className="button"
               onClick={() => handleJoinRoom(room.room_id)}
               disabled={room.is_full || room.game_state === "playing"}
             >

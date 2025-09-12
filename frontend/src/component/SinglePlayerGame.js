@@ -137,11 +137,15 @@ function SinglePlayerGame() {
 
   return (
     <div>
-      <h1>Wordle Game - Room: {roomId.substring(0, 8)} (Single Player)</h1>
-      <button onClick={handleLeaveRoom} className="leave-button">
+      <button onClick={handleLeaveRoom} className="top-right-action-button">
         Back to Lobby
       </button>
-      <p className="status-message">{renderStatusMessage()}</p>
+
+      <div className="centered-container">
+        <h1>Wordle Game - Room: {roomId.substring(0, 8)} (Single Player)</h1>
+        <p className="status-message">{renderStatusMessage()}</p>
+      </div>
+
       <div className="game-board">
         {gameState.history.map((turn, turnIndex) => (
           <div key={turnIndex} className="guess-row">
@@ -156,31 +160,42 @@ function SinglePlayerGame() {
           </div>
         ))}
       </div>
-      {gameState.game_state === "waiting" && !isGameOver && (
-        <div className="input-area">
-          <button onClick={handleStartGame}>Start Game</button>
-        </div>
-      )}
-      {gameState.game_state === "playing" && (
-        <div className="input-area">
-          <input
-            type="text"
-            value={guess}
-            onChange={(e) => setGuess(e.target.value.toUpperCase())}
-            maxLength="5"
-            onKeyPress={(e) => e.key === "Enter" && makeGuess()}
-            placeholder="Enter your 5-letter guess"
-          />
-          <button onClick={makeGuess}>Submit</button>
-        </div>
-      )}
-      {isGameOver && (
-        <div className="input-area">
-          <p>The game has ended.</p>
-          <button onClick={handlePlayAgain}>Play Again</button>
-          <button onClick={() => navigate("/lobby")}>Back to Lobby</button>
-        </div>
-      )}
+
+      <div className="centered-container">
+        {gameState.game_state === "waiting" && !isGameOver && (
+          <div className="input-area">
+            <button onClick={handleStartGame} className="button">
+              Start Game
+            </button>
+          </div>
+        )}
+
+        {gameState.game_state === "playing" && (
+          <div className="input-area">
+            <input
+              type="text"
+              value={guess}
+              onChange={(e) => setGuess(e.target.value.toUpperCase())}
+              maxLength="5"
+              onKeyPress={(e) => e.key === "Enter" && makeGuess()}
+              placeholder="Enter your 5-letter guess"
+              className="guess-input"
+            />
+            <button onClick={makeGuess} className="button">
+              Submit
+            </button>
+          </div>
+        )}
+
+        {isGameOver && (
+          <div className="input-area">
+            <p>The game has ended.</p>
+            <button onClick={handlePlayAgain} className="button">
+              Play Again
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

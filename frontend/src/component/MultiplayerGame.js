@@ -138,14 +138,18 @@ function MultiplayerGame() {
 
   return (
     <div>
-      <h1>Wordle Game - Room: {roomId.substring(0, 8)}</h1>
-      <button onClick={handleLeaveRoom} className="leave-button">
+      <button onClick={handleLeaveRoom} className="top-right-action-button">
         Leave Room
       </button>
-      <p className="status-message">{renderStatusMessage()}</p>
-      {eventNotification && (
-        <p className="event-notification">{eventNotification}</p>
-      )}
+
+      <div className="centered-container">
+        <h1>Wordle Game - Room: {roomId.substring(0, 8)}</h1>
+        <p className="status-message">{renderStatusMessage()}</p>
+        {eventNotification && (
+          <p className="event-notification">{eventNotification}</p>
+        )}
+      </div>
+
       <div className="game-board">
         {gameState.history.map((turn, turnIndex) => (
           <div key={turnIndex} className="guess-row">
@@ -160,58 +164,68 @@ function MultiplayerGame() {
           </div>
         ))}
       </div>
-      {gameState.game_state === "waiting" && !isGameOver && (
-        <div className="input-area">
-          <h3>Players in room:</h3>
-          <ul>
-            {gameState.players.map((p) => (
-              <li key={p}>
-                {p} {p === gameState.host ? "(Host)" : ""}
-              </li>
-            ))}
-          </ul>
-          {isHost && gameState.is_full && (
-            <button onClick={handleReplayOrStart}>Start Game</button>
-          )}
-        </div>
-      )}
-      {gameState.game_state === "playing" && (
-        <div className="input-area">
-          <input
-            type="text"
-            value={guess}
-            onChange={(e) => setGuess(e.target.value.toUpperCase())}
-            maxLength="5"
-            disabled={!isMyTurn}
-            placeholder={
-              isMyTurn ? "Enter your 5-letter guess" : "Wait for your turn..."
-            }
-            onKeyPress={(e) => e.key === "Enter" && isMyTurn && makeGuess()}
-          />
-          <button onClick={makeGuess} disabled={!isMyTurn}>
-            Submit
-          </button>
-        </div>
-      )}
-      {isGameOver && (
-        <div className="input-area">
-          <p>The game has ended. Waiting for the host to start a new round.</p>
-          {isHost && (
-            <button
-              onClick={() => {
-                if (socketRef.current) {
-                  socketRef.current.send(
-                    JSON.stringify({ type: "replay_game" })
-                  );
-                }
-              }}
-            >
-              Replay
+
+      <div className="centered-container">
+        {gameState.game_state === "waiting" && !isGameOver && (
+          <div className="input-area">
+            <h3>Players in room:</h3>
+            <ul>
+              {gameState.players.map((p) => (
+                <li key={p}>
+                  {p} {p === gameState.host ? "(Host)" : ""}
+                </li>
+              ))}
+            </ul>
+            {isHost && gameState.is_full && (
+              <button onClick={handleReplayOrStart} className="button">
+                Start Game
+              </button>
+            )}
+          </div>
+        )}
+
+        {gameState.game_state === "playing" && (
+          <div className="input-area">
+            <input
+              type="text"
+              value={guess}
+              onChange={(e) => setGuess(e.target.value.toUpperCase())}
+              maxLength="5"
+              disabled={!isMyTurn}
+              placeholder={
+                isMyTurn ? "Enter your 5-letter guess" : "Wait for your turn..."
+              }
+              onKeyPress={(e) => e.key === "Enter" && isMyTurn && makeGuess()}
+              className="guess-input"
+            />
+            <button onClick={makeGuess} disabled={!isMyTurn} className="button">
+              Submit
             </button>
-          )}
-          <button onClick={() => navigate("/lobby")}>Back to Lobby</button>
-        </div>
-      )}
+          </div>
+        )}
+
+        {isGameOver && (
+          <div className="input-area">
+            <p>
+              The game has ended. Waiting for the host to start a new round.
+            </p>
+            {isHost && (
+              <button
+                onClick={() => {
+                  if (socketRef.current) {
+                    socketRef.current.send(
+                      JSON.stringify({ type: "replay_game" })
+                    );
+                  }
+                }}
+                className="button"
+              >
+                Replay
+              </button>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
